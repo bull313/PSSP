@@ -1,0 +1,42 @@
+F(non_terminal) = First set of nonterminal "non_terminal"
+================================================================
+F(stmt) = F(simple_stmt) U F(compound_stmt)
+	F(simple_stmt) = F(small_stmt)
+		F(small_stmt) = F(expr_stmt) U F(del_stmt) U F(pass_stmt) U F(flow_stmt) U F(import_stmt) U F(global_stmt) U F(nonlocal_stmt) U F(assert_stmt)
+			F(expr_stmt) = F(testlist_star_expr)
+				F(testlist_star_expr) = F(test) U F(star_expr)
+					F(test) = F(or_test) U F(lambdef)
+						F(or_test) = F(and_test) = F(not_test) = { "NOT" } U F(comparison)
+							F(comparison) = F(expr) = F(xor_expr) = F(and_expr) = F(shift_expr) = F(arith_expr) = F(term) = F(factor)
+								F(factor) = { "PLUS", "MINUS", "TILDE" } U F(power)
+									F(power) = F(atom_expr) = { "AWAIT" } U F(atom)
+										F(atom) = { "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE" }
+									F(power) = { "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE" }
+								F(factor) = { "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE" }
+						F(or_test) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE" }
+					F(test) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA" }
+					F(star_expr) = { "ASTERISK" }
+				F(testlist_star_expr) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA", "ASTERISK" }
+			F(expr_stmt) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA", "ASTERISK" }
+			F(del_stmt) = { "DEL" }
+			F(pass_stmt) = { "PASS" }
+			F(flow_stmt) = F(break_stmt) U F(continue_stmt) U F(return_stmt) U F(raise_stmt) U F(yield_stmt)
+			F(flow_stmt) = { "BREAK", "CONTINUE", "RETURN", "RAISE", "YIELD" }
+			F(import_stmt) = { "IMPORT", "FROM" }
+			F(global_stmt) = { "GLOBAL" }
+			F(nonlocal_stmt) = { "NONLOCAL" }
+			F(assert_stmt) = { "ASSERT" }
+		F(small_stmt) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA", "ASTERISK", "DEL", "PASS", "BREAK", "CONTINUE", "RETURN", "RAISE", "YIELD", "IMPORT", "FROM", "GLOBAL", "NONLOCAL", "ASSERT" }
+	F(simple_stmt) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA", "ASTERISK", "DEL", "PASS", "BREAK", "CONTINUE", "RETURN", "RAISE", "YIELD", "IMPORT", "FROM", "GLOBAL", "NONLOCAL", "ASSERT" }
+	F(compound_stmt) = F(if_stmt) U F(while_stmt) U F(for_stmt) U F(try_stmt) U F(with_stmt) U F(funcdef) U F(classdef) U F(decorated) U F(async_stmt)
+		F(if_stmt) = { "IF "}
+		F(while_stmt) = { "WHILE" }
+		F(for_stmt) = { "FOR" }
+		F(try_stmt) = { "TRY" }
+		F(with_stmt) = { "WITH" }
+		F(funcdef) = { "DEF" }
+		F(classdef) = { "CLASS" }
+		F(decorated) = F(decorators) = F(decorator) = { "AT" }
+		F(async_stmt) = { "ASYNC" }
+	F(compound_stmt) = { "IF", "WHILE", "FOR", "TRY", "WITH", "DEF", "CLASS", "AT", "ASYNC" }
+F(stmt) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA", "ASTERISK", "DEL", "PASS", "BREAK", "CONTINUE", "RETURN", "RAISE", "YIELD", "IMPORT", "FROM", "GLOBAL", "NONLOCAL", "ASSERT", "IF", "WHILE", "FOR", "TRY", "WITH", "DEF", "CLASS", "AT", "ASYNC" }
