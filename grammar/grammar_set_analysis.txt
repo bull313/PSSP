@@ -13,6 +13,7 @@ F(stmt) = F(simple_stmt) U F(compound_stmt)
 										F(atom) = { "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE" }
 									F(power) = { "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE" }
 								F(factor) = { "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE" }
+							F(comparison) = { "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE" }
 						F(or_test) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE" }
 					F(test) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA" }
 					F(star_expr) = { "ASTERISK" }
@@ -40,3 +41,66 @@ F(stmt) = F(simple_stmt) U F(compound_stmt)
 		F(async_stmt) = { "ASYNC" }
 	F(compound_stmt) = { "IF", "WHILE", "FOR", "TRY", "WITH", "DEF", "CLASS", "AT", "ASYNC" }
 F(stmt) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA", "ASTERISK", "DEL", "PASS", "BREAK", "CONTINUE", "RETURN", "RAISE", "YIELD", "IMPORT", "FROM", "GLOBAL", "NONLOCAL", "ASSERT", "IF", "WHILE", "FOR", "TRY", "WITH", "DEF", "CLASS", "AT", "ASYNC" }
+F(arglist) = F(argument) = F(test) U { "POWER", "ASTERISK" }
+F(arglist) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA", "POWER", "ASTERISK" }
+F(typedargslist) = F(tfpdef) U { "ASTERISK", "POWER" }
+	F(tfpdef) = { "NAME" }
+F(typedargslist) = { "NAME", "ASTERISK", "POWER" }
+F(testlist) = F(test) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA" }
+F(varargslist) = F(vfpdef) U { "ASTERISK", "POWER" } = { "NAME", "ASTERISK", "POWER" }
+	F(vfpdef) = { "NAME" }
+F(dictorsetmaker) = F(test) U { "POWER" } + F(star_expr) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA", "POWER", "ASTERISK" }
+F(namedexpr_test) = F(test) = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA" }
+F(comp_for) = { "ASYNC" } U F(sync_comp_for) = { "ASYNC", "FOR" }
+	F(sync_comp_for) = { "FOR" }
+F(subscript) = F(test) U { "COLON" } = { "NOT", "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE", "LAMBDA", "COLON" }
+F(sliceop) = { "COLON" }
+F(expr) = F(xor_expr)  = F(and_expr) = F(shift_expr) = F(arith_expr) = F(term) = F(factor) = { "PLUS", "MINUS", "TILDE", "AWAIT", "LPAREN", "LBRACKET", "LBRACE", "NAME", "NUMBER", "STRING", "ELLIPSIS", "NONE", "TRUE", "FALSE" }
+F(comp_if) = { "IF" }
+F(comp_iter) = F(comp_for) U F(comp_if) = { "ASYNC", "FOR", "IF" }
+================================================================
+Deviations from the python_grammar:
+	Ignored note: # NB: due to the way TYPE_COMMENT is tokenized it will always be followed by a NEWLINE
+	No spaces for indents/dedents
+	Indents and dedents can only be in increments of 1
+	simple_stmt => Ignoring required NEWLINE at the end. Is it really required?
+
+	atom => Include optional sequences of newlines in the bodies of open-close atoms (NEWLINE*):
+		atom: ('(' NEWLINE* [yield_expr|testlist_comp] NEWLINE* ')' |
+       '[' NEWLINE* [testlist_comp] NEWLINE* ']' |
+       '{' NEWLINE* [dictorsetmaker] NEWLINE* '}' |
+       NAME | NUMBER | STRING+ | '...' | 'None' | 'True' | 'False')
+	
+	atom_expr => Include optional sequence of newlines after atom (NEWLINE*)
+		atom_expr: [AWAIT] atom NEWILNE* trailer*
+
+	suite => Include optional sequence of newlines after first newline (NEWLINE+) and after stmt (NEWLINE*)
+		suite: simple_stmt | NEWLINE+ INDENT (stmt NEWLINE*)+ DEDENT
+	
+	func_body_suite => Include optional sequence of newlines after stmt (NEWLINE*)
+		func_body_suite: simple_stmt | NEWLINE+ [TYPE_COMMENT NEWLINE] INDENT (stmt NEWLINE*)+ DEDENT
+
+	dictorsetmaker => Include optional sequence of newlines after first newline (NEWLINE+) and after ',' (NEWLINE*)
+		dictorsetmaker: ( ((test ':' test | '**' expr)
+                   (comp_for | (',' NEWLINE* (test ':' test | '**' expr))* [','])) |
+                  ((test | star_expr)
+                   (comp_for | (',' NEWLINE* (test | star_expr))* [','])) )
+
+	testlist_comp => Include optional sequence of newlines after ',' (NEWLINE*)
+		testlist_comp: (namedexpr_test|star_expr) ( comp_for | (',' NEWLINE* (namedexpr_test|star_expr))* [','] )
+	
+	arglist => Include optional sequence of newlines after argument (NEWLINE*)
+		arglist: argument NEWLINE* (',' argument)*  [',']
+
+	if_stmt => Added NEWLINE*s
+		if_stmt: 'if' namedexpr_test ':' suite NEWLINE* ('elif' namedexpr_test ':' suite NEWLINE*)* NEWLINE* ['else' ':' suite]
+
+	arith_expr => Added NEWLINE*s
+		arith_expr: term NEWLINE* (('+'|'-') NEWLINE* term NEWLINE*)*
+
+	Ignored (Unimplemented) rules:
+		single_input
+		eval_input
+		func_type_input
+		func_type
+		typelist
