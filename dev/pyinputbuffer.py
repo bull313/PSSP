@@ -2,7 +2,7 @@
 InputBuffer:
     Contains program text
     Returns characters one at a time
-    Allows for putting characters back into the buffer
+    Allows putting characters back into the buffer
 
     Behaves like a stack: LIFO
 """
@@ -19,6 +19,7 @@ class InputBuffer:
     Remove a character from the buffer and return it
     """
     def get_char(self):
+        
         if len(self._text) == 0:
             return None
         
